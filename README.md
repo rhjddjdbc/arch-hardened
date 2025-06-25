@@ -1,4 +1,3 @@
-# arch-hardend
 # Arch Linux Hardening Script
 
 Dieses Skript automatisiert grundlegende Härtungsmaßnahmen für Arch Linux und richtet sicherheitsrelevante Dienste ein, um das System robuster gegenüber Angriffen zu machen.
