@@ -2,47 +2,45 @@
 
 set -euo pipefail
 
+if [ "$EUID" -eq 0 ]; then
+  echo "Bitte führe dieses Skript NICHT als root aus. Verwende einen Benutzer mit sudo-Rechten."
+  exit 1
+fi
+
 echo "Starting Arch Hardening..."
 
 # Kernel: linux-hardened
 echo "Installing hardened kernel..."
-pacman -Sy --noconfirm linux-hardened linux-hardened-headers
+sudo pacman -Sy --noconfirm linux-hardened linux-hardened-headers
 
 # GRUB configuration
 echo "Configuring GRUB..."
-sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="quiet apparmor=1 security=apparmor slab_nomerge random.trust_cpu=off page_alloc.shuffle=1 loglevel=3"/' /etc/default/grub
-grub-mkconfig -o /boot/grub/grub.cfg
+sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT=.*/GRUB_CMDLINE_LINUX_DEFAULT="quiet apparmor=1 security=apparmor slab_nomerge random.trust_cpu=off page_alloc.shuffle=1 loglevel=3"/' /etc/default/grub
+sudo grub-mkconfig -o /boot/grub/grub.cfg
 
 # AppArmor
 echo "Enabling AppArmor..."
-pacman -S --noconfirm apparmor apparmor-utils
-systemctl enable --now apparmor
+sudo pacman -S --noconfirm apparmor apparmor-utils
+sudo systemctl enable --now apparmor
 
-# AppArmor profiles from AUR (manual installation)
+# AppArmor profiles from AUR
 echo "Installing AppArmor profiles..."
-pacman -S --noconfirm --needed git base-devel
+sudo pacman -S --noconfirm --needed git base-devel
 git clone https://aur.archlinux.org/apparmor-profiles-git.git /tmp/apparmor-profiles-git
 cd /tmp/apparmor-profiles-git
 makepkg -si --noconfirm
-aa-enforce /etc/apparmor.d/*
 
 # USBGuard
 echo "Enabling USBGuard..."
-pacman -S --noconfirm usbguard
-systemctl enable --now usbguard
-usbguard generate-policy > /etc/usbguard/rules.conf
-chattr +i /etc/usbguard/rules.conf
-
-# systemd-homed
-echo "Enabling systemd-homed..."
-pacman -S --noconfirm systemd-homed
-systemctl enable --now systemd-homed.service
+sudo pacman -S --noconfirm usbguard
+sudo systemctl enable --now usbguard
+sudo usbguard generate-policy | sudo tee /etc/usbguard/rules.conf > /dev/null
 
 # nftables firewall
 echo "Configuring firewall..."
-pacman -S --noconfirm nftables
-systemctl enable --now nftables
-cat > /etc/nftables.conf <<EOF
+sudo pacman -S --noconfirm nftables
+sudo systemctl enable --now nftables
+sudo tee /etc/nftables.conf > /dev/null <<EOF
 table inet filter {
   chain input {
     type filter hook input priority 0;
@@ -57,49 +55,40 @@ EOF
 
 # sysctl parameters
 echo "Setting sysctl parameters..."
-cat > /etc/sysctl.d/99-sec.conf <<EOF
+sudo tee /etc/sysctl.d/99-sec.conf > /dev/null <<EOF
 kernel.kptr_restrict=2
 kernel.dmesg_restrict=1
 kernel.randomize_va_space=2
 fs.protected_symlinks=1
 fs.protected_hardlinks=1
 EOF
-sysctl --system
+sudo sysctl --system
 
-# AIDE
+# AIDE aus dem AUR installieren
+echo "Installing AIDE from AUR..."
+git clone https://aur.archlinux.org/aide.git /tmp/aide
+cd /tmp/aide
+makepkg -si --noconfirm
+
 echo "Initializing AIDE..."
-pacman -S --noconfirm aide
-aide --init
-mv /var/lib/aide/aide.db.new /var/lib/aide/aide.db
+sudo aide --init
+sudo mv /var/lib/aide/aide.db.new /var/lib/aide/aide.db
 
 # ClamAV
 echo "Installing ClamAV..."
-pacman -S --noconfirm clamav
-systemctl enable --now clamav-freshclam
-clamscan -r --bell -i /home || true
+sudo pacman -S --noconfirm clamav
+sudo systemctl enable --now clamav-freshclam
+clamscan -r --bell -i "$HOME" || true
 
 # dnscrypt-proxy for LibreDNS
 echo "Setting up encrypted DNS with dnscrypt-proxy..."
-pacman -S --noconfirm dnscrypt-proxy
-sed -i 's/^# server_names = 
+sudo pacman -S --noconfirm dnscrypt-proxy
+sudo sed 's/^# server_names =.*/server_names = ["libredns"]/' /etc/dnscrypt-proxy/dnscrypt-proxy.toml
+sudo sed 's/^# require_dnssec = false/require_dnssec = true/' /etc/dnscrypt-proxy/dnscrypt-proxy.toml
+sudo systemctl enable --now dnscrypt-proxy
+echo "nameserver 127.0.0.1" | sudo tee /etc/resolv.conf > /dev/null
 
-
-
-\[.*/server_names = 
-
-
-
-\["libredns"\]
-
-
-
-/' /etc/dnscrypt-proxy/dnscrypt-proxy.toml
-sed -i 's/^# require_dnssec = false/require_dnssec = true/' /etc/dnscrypt-proxy/dnscrypt-proxy.toml
-systemctl enable --now dnscrypt-proxy.service
-echo "nameserver 127.0.0.1" > /etc/resolv.conf
-
-# hBlock installation
+# hBlock
 echo "Installing hBlock to block trackers/malware..."
-pacman -S --noconfirm curl
-curl -sSL https://hblock.molinero.dev/install | bash
-
+sudo pacman -S --noconfirm curl
+curl -sSL https://hblock.molinero.dev/install | sudo bash
