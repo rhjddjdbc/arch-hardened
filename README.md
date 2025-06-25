@@ -1,34 +1,30 @@
 # Arch Linux Hardening Script
 
-Dieses Skript automatisiert grundlegende Härtungsmaßnahmen für Arch Linux und richtet sicherheitsrelevante Dienste ein, um das System robuster gegenüber Angriffen zu machen.
+This script automates basic hardening measures for Arch Linux, setting up security-related services to make the system more resilient against attacks.
 
-## Hinweis
+## Note
 
-**Führe dieses Skript nicht als Root aus.**  
-Verwende stattdessen einen normalen Benutzer mit `sudo`-Rechten.
+**Do not run this script as root.**  
+Use a regular user with `sudo` privileges instead.
 
-## Funktionen
+## Features
 
-- Installation des `linux-hardened` Kernels
-- Aktivierung von AppArmor mit optionalen Profilen
-- Konfiguration der GRUB-Bootoptionen für bessere Isolation
-- Einrichtung von USBGuard zur USB-Gerätekontrolle
-- Konfiguration einer einfachen nftables-Firewall
-- Absicherung des Kernels via sysctl
-- Installation von AIDE (Intrusion Detection) aus dem AUR
-- Einrichtung des Virenscanners ClamAV
-- Aktivierung von dnscrypt-proxy mit LibreDNS
-- Installation von hBlock zur Blockierung von Tracker- und Malware-Domains
-- Automatische Installation von yay, falls nicht vorhanden
+- Installs the `linux-hardened` kernel
+- Enables AppArmor and optional profiles
+- Configures GRUB boot options for better isolation
+- Sets up USBGuard to control USB devices
+- Configures a basic nftables firewall
+- Applies kernel hardening via sysctl
+- Installs AIDE (Advanced Intrusion Detection Environment) from the AUR
+- Installs the ClamAV antivirus scanner
+- Sets up dnscrypt-proxy with LibreDNS
+- Installs hBlock to block tracking and malware domains
+- Automatically installs `yay` (AUR helper) if not present
 
-## Voraussetzungen
+## Requirements
 
-- Arch Linux oder Arch-basierte Distribution
-- Benutzer mit sudo-Rechten (Mitglied der Gruppe `wheel`)
-- Internetverbindung
+- Arch Linux or an Arch-based distribution
+- A user with sudo privileges (in the `wheel` group)
+- Internet connection
 
-## Nutzung
-
-1. Skript herunterladen:
-   ```bash
-   git clone https://github.com/arch-harden.git
+   
