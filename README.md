@@ -27,4 +27,6 @@ Use a regular user with `sudo` privileges instead.
 - A user with sudo privileges (in the `wheel` group)
 - Internet connection
 
-   
+## Usage
+git clone https://github.com/arch-harden.git && cd arch-harden && chmod +x arch-harden.sh && ./arch-harden.sh
+
