@@ -72,7 +72,7 @@ fs.protected_hardlinks=1
 EOF
 sudo sysctl --system
 
-# AIDE aus dem AUR installieren
+# AIDE
 echo "Installing AIDE from AUR..."
 yay -S aide
 
