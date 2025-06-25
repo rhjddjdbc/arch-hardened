@@ -9,6 +9,17 @@ fi
 
 echo "Starting Arch Hardening..."
 
+# yay
+if ! command -v yay &> /dev/null; then
+  echo "yay nicht gefunden – wird installiert..."
+  sudo pacman -S --needed git base-devel
+  git clone https://aur.archlinux.org/yay.git /tmp/yay
+  cd /tmp/yay
+  makepkg -si --noconfirm
+else
+  echo "yay ist bereits installiert."
+fi
+
 # Kernel: linux-hardened
 echo "Installing hardened kernel..."
 sudo pacman -Sy --noconfirm linux-hardened linux-hardened-headers
@@ -20,15 +31,12 @@ sudo grub-mkconfig -o /boot/grub/grub.cfg
 
 # AppArmor
 echo "Enabling AppArmor..."
-sudo pacman -S --noconfirm apparmor apparmor-utils
+sudo pacman -S --noconfirm apparmor
 sudo systemctl enable --now apparmor
 
 # AppArmor profiles from AUR
 echo "Installing AppArmor profiles..."
-sudo pacman -S --noconfirm --needed git base-devel
-git clone https://aur.archlinux.org/apparmor-profiles-git.git /tmp/apparmor-profiles-git
-cd /tmp/apparmor-profiles-git
-makepkg -si --noconfirm
+yay -S apparmor-profiles-git
 
 # USBGuard
 echo "Enabling USBGuard..."
@@ -66,13 +74,10 @@ sudo sysctl --system
 
 # AIDE aus dem AUR installieren
 echo "Installing AIDE from AUR..."
-git clone https://aur.archlinux.org/aide.git /tmp/aide
-cd /tmp/aide
-makepkg -si --noconfirm
+yay -S aide
 
 echo "Initializing AIDE..."
 sudo aide --init
-sudo mv /var/lib/aide/aide.db.new /var/lib/aide/aide.db
 
 # ClamAV
 echo "Installing ClamAV..."
