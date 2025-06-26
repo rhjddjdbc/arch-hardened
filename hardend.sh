@@ -159,6 +159,7 @@ setup_doas_and_remove_sudo() {
   echo "Removing sudo..."
   doas pacman -Rdd --noconfirm sudo
 }
+setup_doas_and_remove_sudo
 
 # Reboot
 read -rp "System neu starten, um alle Änderungen zu übernehmen? (y/N): " reboot_choice
