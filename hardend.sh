@@ -148,7 +148,21 @@ EOF
 # Regeln laden
 sudo augenrules --load
 
+# doas
+setup_doas_and_remove_sudo() {
+  if ! command -v doas &>/dev/null; then
+    echo "Installing doas..."
+    sudo pacman -S --noconfirm opendoas
+
+    echo "Creating /etc/doas.conf..."
+    echo 'permit persist :wheel' | sudo tee /etc/doas.conf > /dev/null
+  fi
+
+  echo "Removing sudo..."
+  doas pacman -Rdd --noconfirm sudo
+}
+
 # Reboot
 read -rp "System neu starten, um alle Änderungen zu übernehmen? (y/N): " reboot_choice
-[[ $reboot_choice =~ ^[Yy]$ ]] && sudo reboot
+[[ $reboot_choice =~ ^[Yy]$ ]] && doas reboot
 
