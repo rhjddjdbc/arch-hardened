@@ -3,7 +3,7 @@
 set -euo pipefail
 
 if [ "$EUID" -eq 0 ]; then
-  echo "Bitte führe dieses Skript NICHT als root aus. Verwende einen Benutzer mit sudo-Rechten."
+  echo "Please DO NOT run this script as root. Use a user account with sudo privileges."
   exit 1
 fi
 
@@ -11,13 +11,13 @@ echo "Starting Arch Hardening..."
 
 # yay
 if ! command -v yay &> /dev/null; then
-  echo "yay nicht gefunden – wird installiert..."
+  echo "yay not found – installing..."
   sudo pacman -S --needed git base-devel
   git clone https://aur.archlinux.org/yay.git /tmp/yay
   cd /tmp/yay
   makepkg -si --noconfirm
 else
-  echo "yay ist bereits installiert."
+  echo "yay is already installed."
 fi
 
 # Kernel: linux-hardened
@@ -110,40 +110,40 @@ sudo pacman -S audit
 sudo systemctl enable --now auditd
 
 sudo tee /etc/audit/rules.d/arch-hardening.rules > /dev/null <<'EOF'
-# doas Überwachung
+# doas monitoring
 -a always,exit -F path=/usr/bin/doas -F perm=x -F auid>=1000 -F auid!=4294967295 -k doas-calls
 
-# Änderungen an /etc/
+# changes in /etc/
 -w /etc/ -p wa -k etc-changes
 
-# passwd & shadow
+# passwd & shadow files
 -w /etc/passwd -p wa -k passwd-watch
 -w /etc/shadow -p wa -k shadow-watch
 
-# sicherheitskritische Konfigdateien
+# critical config files
 -w /etc/sudoers -p wa -k sudoers
 -w /etc/doas.conf -p wa -k doasconf
 -w /etc/pacman.conf -p wa -k pkg-conf
 
-# Kernel-Module laden/löschen
+# loading/unloading kernel modules
 -a always,exit -F arch=b64 -S init_module -S delete_module -k kernel-module
 
-# Gruppen- und Benutzerdateien
+# group & user files
 -w /etc/group -p wa -k group-change
 -w /etc/gshadow -p wa -k gshadow-change
 
-# Überwachung von /home
+# /home monitoring
 -w /home/ -p rwxa -k home-access
 
-# Schutz von /boot
+# protecting /boot
 -w /boot/ -p wa -k boot-watch
 
-# Zeitmanipulation
+# time tampering
 -w /etc/adjtime -p wa -k time-change
 -w /etc/systemd/timesyncd.conf -p wa -k timesync-change
 EOF
 
-# Regeln laden
+# Load audit rules
 sudo augenrules --load
 
 # doas
@@ -162,6 +162,6 @@ setup_doas_and_remove_sudo() {
 setup_doas_and_remove_sudo
 
 # Reboot
-read -rp "System neu starten, um alle Änderungen zu übernehmen? (y/N): " reboot_choice
+read -rp "Reboot the system to apply all changes? (y/N): " reboot_choice
 [[ $reboot_choice =~ ^[Yy]$ ]] && doas reboot
 
