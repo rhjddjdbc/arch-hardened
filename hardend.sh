@@ -69,6 +69,9 @@ kernel.dmesg_restrict=1
 kernel.randomize_va_space=2
 fs.protected_symlinks=1
 fs.protected_hardlinks=1
+net.ipv4.conf.all.rp_filter=1
+net.ipv4.conf.default.rp_filter=1
+net.ipv4.tcp_syncookies=1
 EOF
 sudo sysctl --system
 
@@ -97,3 +100,55 @@ echo "nameserver 127.0.0.1" | sudo tee /etc/resolv.conf > /dev/null
 echo "Installing hBlock to block trackers/malware..."
 sudo pacman -S --noconfirm curl
 curl -sSL https://hblock.molinero.dev/install | sudo bash
+
+# pam
+configure_pam_faillock() {
+  sudo sed -i '/^auth.*pam_unix.so/a auth required pam_faillock.so preauth silent deny=5 unlock_time=900' /etc/pam.d/system-auth
+  sudo sed -i '/^auth.*pam_unix.so/a auth [default=die] pam_faillock.so authfail' /etc/pam.d/system-auth
+}
+
+# audit
+sudo pacman -S audit
+sudo systemctl enable --now auditd
+
+sudo tee /etc/audit/rules.d/arch-hardening.rules > /dev/null <<'EOF'
+# doas Überwachung
+-a always,exit -F path=/usr/bin/doas -F perm=x -F auid>=1000 -F auid!=4294967295 -k doas-calls
+
+# Änderungen an /etc/
+-w /etc/ -p wa -k etc-changes
+
+# passwd & shadow
+-w /etc/passwd -p wa -k passwd-watch
+-w /etc/shadow -p wa -k shadow-watch
+
+# sicherheitskritische Konfigdateien
+-w /etc/sudoers -p wa -k sudoers
+-w /etc/doas.conf -p wa -k doasconf
+-w /etc/pacman.conf -p wa -k pkg-conf
+
+# Kernel-Module laden/löschen
+-a always,exit -F arch=b64 -S init_module -S delete_module -k kernel-module
+
+# Gruppen- und Benutzerdateien
+-w /etc/group -p wa -k group-change
+-w /etc/gshadow -p wa -k gshadow-change
+
+# Überwachung von /home
+-w /home/ -p rwxa -k home-access
+
+# Schutz von /boot
+-w /boot/ -p wa -k boot-watch
+
+# Zeitmanipulation
+-w /etc/adjtime -p wa -k time-change
+-w /etc/systemd/timesyncd.conf -p wa -k timesync-change
+EOF
+
+# Regeln laden
+sudo augenrules --load
+
+# Reboot
+read -rp "System neu starten, um alle Änderungen zu übernehmen? (y/N): " reboot_choice
+[[ $reboot_choice =~ ^[Yy]$ ]] && sudo reboot
+
