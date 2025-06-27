@@ -8,7 +8,7 @@ if [ "$EUID" -eq 0 ]; then
 fi
 
 echo "Starting Arch Hardening..."
-
+su -c "pacman -S sudo"
 # yay
 if ! command -v yay &> /dev/null; then
   echo "yay not found – installing..."
