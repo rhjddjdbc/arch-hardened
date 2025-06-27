@@ -101,9 +101,6 @@ echo "Installing hBlock to block trackers/malware..."
 sudo pacman -S --noconfirm curl
 curl -sSL https://hblock.molinero.dev/install | sudo bash
 
-# pam
-sudo sed -i '/^auth.*pam_unix.so/a auth required pam_faillock.so preauth silent deny=5 unlock_time=900' /etc/pam.d/system-auth
-sudo sed -i '/^auth.*pam_unix.so/a auth [default=die] pam_faillock.so authfail' /etc/pam.d/system-auth
 
 # audit
 sudo pacman -S audit
