@@ -42,9 +42,6 @@ Use a regular user with `sudo` privileges instead.
 - **Installs hBlock to block tracking and malware domains**  
   Downloads and installs `hBlock`, which filters known ad, tracking, and malware domains system-wide by modifying `/etc/hosts`.
 
-- **Configures PAM with `pam_faillock`**  
-  Adds login rate-limiting to `PAM` to prevent brute-force attacks by locking accounts after repeated failed attempts. Lockout time and attempt count are configurable.
-
 - **Sets up `auditd` with custom rules**  
   Installs and enables the audit daemon, and adds detailed rules to monitor sensitive areas like `/etc`, user/group files, kernel modules, time configuration, and `/boot`.
 
