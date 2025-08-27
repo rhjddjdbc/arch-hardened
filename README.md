@@ -56,5 +56,5 @@ Use a regular user with `sudo` privileges instead.
 - Internet connection
 
 ## Usage
-git clone https://github.com/arch-hardened.git && cd arch-harden && chmod +x arch-harden.sh && ./arch-harden.sh
+git clone https://github.com/arch-hardened.git && cd arch-hardened && chmod +x arch-hardening.sh && ./arch-hardening.sh
 
