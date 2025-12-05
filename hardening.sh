@@ -8,8 +8,8 @@ if [ "$EUID" -eq 0 ]; then
   exit 1
 fi
 
-# Function to install doas and remove sudo
-setup_doas_and_remove_sudo() {
+# Function to install doas
+setup_doas() {
   if command -v doas &>/dev/null; then
     echo "doas is already installed."
   else
@@ -19,12 +19,8 @@ setup_doas_and_remove_sudo() {
     echo 'permit persist :wheel' | doas tee /etc/doas.conf > /dev/null
   fi
 
-  if command -v sudo &>/dev/null; then
-    echo "Removing sudo..."
-    doas pacman -Rdd --noconfirm sudo
-  fi
 }
-setup_doas_and_remove_sudo
+setup_doas
 
 # Check if yay is installed
 if ! command -v yay &> /dev/null; then
@@ -167,7 +163,8 @@ EOF
 
 # Apply audit rules
 doas augenrules --load
-
+echo "Removing sudo..."
+doas pacman -Rdd --noconfirm sudo
 # Prompt for system reboot
 read -rp "Reboot the system to apply all changes? (y/N): " reboot_choice
 [[ $reboot_choice =~ ^[Yy]$ ]] && doas reboot
