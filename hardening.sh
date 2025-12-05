@@ -163,8 +163,15 @@ EOF
 
 # Apply audit rules
 doas augenrules --load
-echo "Removing sudo..."
-doas pacman -Rdd --noconfirm sudo
+
+if command -v doas >/dev/null && \
+   doas true && \
+   doas -C /etc/doas.conf && \
+   doas pacman -Qs opendoas >/dev/null && \
+   doas ls /root >/dev/null 2>&1; then
+   
+   doas pacman -Rdd --noconfirm sudo
+fi
 # Prompt for system reboot
 read -rp "Reboot the system to apply all changes? (y/N): " reboot_choice
 [[ $reboot_choice =~ ^[Yy]$ ]] && doas reboot
