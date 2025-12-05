@@ -24,6 +24,7 @@ setup_doas_and_remove_sudo() {
     doas pacman -Rdd --noconfirm sudo
   fi
 }
+setup_doas_and_remove_sudo
 
 # Check if yay is installed
 if ! command -v yay &> /dev/null; then
@@ -166,9 +167,6 @@ EOF
 
 # Apply audit rules
 doas augenrules --load
-
-# Install doas and remove sudo if necessary
-setup_doas_and_remove_sudo
 
 # Prompt for system reboot
 read -rp "Reboot the system to apply all changes? (y/N): " reboot_choice
